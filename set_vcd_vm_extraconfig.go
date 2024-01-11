@@ -1,24 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"flag"
 	"strings"
-	
+
 	"github.com/vmware/cloud-provider-for-cloud-director/pkg/vcdsdk"
 )
 
 type Config struct {
-	Host             string
-	User             string
-	RefreshToken     string
-	Insecure         bool
-	TenantOrg        string
-	TenantVdc        string
-	VM               string
-	ExtraConfig      extraConfig
-	PowerOn			 bool
+	Host         string
+	User         string
+	RefreshToken string
+	Insecure     bool
+	TenantOrg    string
+	TenantVdc    string
+	VM           string
+	ExtraConfig  extraConfig
+	PowerOn      bool
 }
 
 type extraConfig []BaseOptionValue
@@ -29,11 +29,11 @@ type BaseOptionValue interface {
 
 type OptionValue struct {
 	DynamicData
-	Key string `xml:"key" json:"key"`
+	Key   string  `xml:"key" json:"key"`
 	Value AnyType `xml:"value,typeattr" json:"value"`
 }
 
-type DynamicData struct {}
+type DynamicData struct{}
 
 type AnyType interface{}
 
@@ -83,16 +83,16 @@ func main() {
 	config := Config{}
 
 	// setup the flags
-    flag.StringVar(&config.Host, "url", getEnvString("VCD_URL", ""), "Cloud Director URL [VCD_URL]")
-    flag.StringVar(&config.User, "user", getEnvString("VCD_USER", ""), "User to connect to Cloud Director [VCD_USER]")
-    flag.StringVar(&config.RefreshToken, "token", getEnvString("VCD_TOKEN", ""), "API Token to authenticate to Cloud Director [VCD_TOKEN]")
-    flag.BoolVar(&config.Insecure, "insecure", false, "Disable certificate verification")
-    flag.StringVar(&config.TenantOrg, "org", "", "Tenant Organization")
-    flag.StringVar(&config.TenantVdc, "vdc", "", "Organization Virtual Datacenter")
-    flag.StringVar(&config.VM, "vm", "", "Target VM Name")
+	flag.StringVar(&config.Host, "url", getEnvString("VCD_URL", ""), "Cloud Director URL [VCD_URL]")
+	flag.StringVar(&config.User, "user", getEnvString("VCD_USER", ""), "User to connect to Cloud Director [VCD_USER]")
+	flag.StringVar(&config.RefreshToken, "token", getEnvString("VCD_TOKEN", ""), "API Token to authenticate to Cloud Director [VCD_TOKEN]")
+	flag.BoolVar(&config.Insecure, "insecure", false, "Disable certificate verification")
+	flag.StringVar(&config.TenantOrg, "org", "", "Tenant Organization")
+	flag.StringVar(&config.TenantVdc, "vdc", "", "Organization Virtual Datacenter")
+	flag.StringVar(&config.VM, "vm", "", "Target VM Name")
 	flag.BoolVar(&config.PowerOn, "poweron", false, "Power On VM after setting ExtraConfig")
 	flag.Var(&config.ExtraConfig, "e", "ExtraConfig with format <key>=<value>")
-    flag.Parse()
+	flag.Parse()
 
 	// required arguments
 	required := []string{"url", "user", "token", "org", "vdc", "vm", "e"}
@@ -100,11 +100,13 @@ func main() {
 
 	// add arguments set with valid default values set to map
 	flag.VisitAll(func(f *flag.Flag) {
-		if f.DefValue !="[]" && f.DefValue != "" { seen[f.Name] = true }
+		if f.DefValue != "[]" && f.DefValue != "" {
+			seen[f.Name] = true
+		}
 	})
 
 	// add arguments explicitly set with a flag to map
-	flag.Visit(func(f *flag.Flag) { seen[f.Name] = true } )
+	flag.Visit(func(f *flag.Flag) { seen[f.Name] = true })
 
 	// check if any required arguments are missing
 	for _, req := range required {
@@ -121,7 +123,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// query the client for the vm object 
+	// query the client for the vm object
 	vm, err := client.VDC.QueryVmByName(config.VM)
 	if err != nil {
 		fmt.Println(err)
