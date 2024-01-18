@@ -1,4 +1,4 @@
-package set_vcd_vm_extraconfig
+package main
 
 import (
 	"flag"
